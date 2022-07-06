@@ -23,7 +23,7 @@ class Everpsvoucheronsubscribe extends Module
     {
         $this->name = 'everpsvoucheronsubscribe';
         $this->tab = 'pricing_promotion';
-        $this->version = '1.2.2';
+        $this->version = '2.1.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -191,6 +191,21 @@ class Everpsvoucheronsubscribe extends Module
                         'hint' => $this->l('Module will work only if enabled'),
                         'type' => 'switch',
                         'name' => 'CUSTVOUCHER_ENABLE',
+                        'values' => array(
+                            array(
+                                'value' => 1,
+                            ),
+                            array(
+                                'value' => 0,
+                            ),
+                        ),
+                    ),
+                    array(
+                        'label' => $this->l('Send voucher codes by email'),
+                        'desc' => $this->l('Will send generated voucher code to customer by email'),
+                        'hint' => $this->l('Else no email will be sent'),
+                        'type' => 'switch',
+                        'name' => 'CUSTVOUCHER_MAIL',
                         'values' => array(
                             array(
                                 'value' => 1,
@@ -372,6 +387,7 @@ class Everpsvoucheronsubscribe extends Module
                     )
                 )
             ),
+            'CUSTVOUCHER_MAIL' => Configuration::get('CUSTVOUCHER_MAIL'),
             'CUSTVOUCHER_MINIMAL' => Configuration::get('CUSTVOUCHER_MINIMAL'),
             'CUSTVOUCHER_AMOUNT' => Configuration::get('CUSTVOUCHER_AMOUNT'),
             'CUSTVOUCHER_PERCENT' => Configuration::get('CUSTVOUCHER_PERCENT'),
@@ -498,6 +514,10 @@ class Everpsvoucheronsubscribe extends Module
             'CUSTVOUCHER_DURATION',
             Tools::getValue('CUSTVOUCHER_DURATION')
         );
+        Configuration::updateValue(
+            'CUSTVOUCHER_MAIL',
+            Tools::getValue('CUSTVOUCHER_MAIL')
+        );
     }
 
     public function hookActionAdminControllerSetMedia()
@@ -618,34 +638,36 @@ class Everpsvoucheronsubscribe extends Module
 
         $mini_amount = (float)Configuration::get('CUSTVOUCHER_MINIMAL');
         $date_to = strftime('%d-%m-%Y',strtotime($cart_rule->date_to));
+        if ((bool)Configuration::get('CUSTVOUCHER_MAIL') === true) {
+            Mail::Send(
+                (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
+                'everpsvoucheronsubscribe', // email template file to be use
+                $this->l('Voucher'), // email subject
+                array(
+                    '{firstname}' => $customer->firstname,
+                    '{lastname}' => $customer->lastname,
+                    '{voucher_num}' => $voucher_code, // email content
+                    '{voucher_amount}' => $reduction,
+                    '{voucher_date}' => $date_to,
+                    '{mini_amount}' => $mini_amount.''.$currency->sign
+                ),
+                $customer->email, // receiver email
+                null, //receiver name
+                Configuration::get('PS_SHOP_EMAIL'), //from email address
+                Configuration::get('PS_SHOP_NAME'),  //from name
+                null,
+                null,
+                dirname(__FILE__).'/mails/'
+            );
 
-        Mail::Send(
-            (int)(Configuration::get('PS_LANG_DEFAULT')), // defaut language id
-            'everpsvoucheronsubscribe', // email template file to be use
-            $this->l('Voucher'), // email subject
-            array(
-                '{firstname}' => $customer->firstname,
-                '{lastname}' => $customer->lastname,
-                '{voucher_num}' => $voucher_code, // email content
-                '{voucher_amount}' => $reduction,
-                '{voucher_date}' => $date_to,
-                '{mini_amount}' => $mini_amount.''.$currency->sign
-            ),
-            $customer->email, // receiver email
-            null, //receiver name
-            Configuration::get('PS_SHOP_EMAIL'), //from email address
-            Configuration::get('PS_SHOP_NAME'),  //from name
-            null,
-            null,
-            dirname(__FILE__).'/mails/'
-        );
-
-        // Save first voucher
-        $subscribe_voucher = new EverPsVoucherOnSubscribeClass();
-        $subscribe_voucher->id_customer = (int)$customer->id;
-        $subscribe_voucher->email = (string)$customer->email;
-        $subscribe_voucher->voucher_code = (string)$voucher_code;
-        return $subscribe_voucher->save();
+            // Save first voucher
+            $subscribe_voucher = new EverPsVoucherOnSubscribeClass();
+            $subscribe_voucher->id_customer = (int)$customer->id;
+            $subscribe_voucher->email = (string)$customer->email;
+            $subscribe_voucher->voucher_code = (string)$voucher_code;
+            return $subscribe_voucher->save();
+        }
+        return true;
     }
 
     private function getAllowedGroups()
