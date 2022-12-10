@@ -23,7 +23,7 @@ class Everpsvoucheronsubscribe extends Module
     {
         $this->name = 'everpsvoucheronsubscribe';
         $this->tab = 'pricing_promotion';
-        $this->version = '2.1.1';
+        $this->version = '2.1.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -588,6 +588,7 @@ class Everpsvoucheronsubscribe extends Module
         ) {
             $cart_rule->reduction_tax = 1;
         }
+        $cart_rule->minimum_amount_currency = (int)Configuration::get('PS_CURRENCY_DEFAULT');
         $cart_rule->active = 1;
         $categories = json_decode(Configuration::get('CUSTVOUCHER_CATEGORY'));
         $languages = Language::getLanguages(true);
