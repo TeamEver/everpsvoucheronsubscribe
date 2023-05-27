@@ -531,7 +531,13 @@ class Everpsvoucheronsubscribe extends Module
             $customer->email
         );
         if (!(bool)$exists) {
-            return $this->createFirstVoucher($customer);
+            try {
+                $this->createFirstVoucher($customer);
+            } catch (Exception $e) {
+                PrestaShopLogger::addLog(
+                    'Ever Voucher on Subscribe : unable to create first voucher'
+                );
+            }
         }
       }
     }
