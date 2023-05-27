@@ -23,7 +23,7 @@ class Everpsvoucheronsubscribe extends Module
     {
         $this->name = 'everpsvoucheronsubscribe';
         $this->tab = 'pricing_promotion';
-        $this->version = '2.1.2';
+        $this->version = '3.1.1';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -42,9 +42,7 @@ class Everpsvoucheronsubscribe extends Module
         Configuration::updateValue('CUSTVOUCHER_ENABLE', 0);
 
         return parent::install() &&
-            $this->registerHook('header') &&
             $this->registerHook('actionCustomerAccountAdd') &&
-            $this->registerHook('actionObjectCustomerDeleteAfter') &&
             $this->createDefaultValues() &&
             $this->registerHook('actionAdminControllerSetMedia');
     }
@@ -395,10 +393,8 @@ class Everpsvoucheronsubscribe extends Module
             'CUSTVOUCHER_PROMO' => Configuration::get('CUSTVOUCHER_PROMO'),
             'CUSTVOUCHER_ENABLE' => Configuration::get('CUSTVOUCHER_ENABLE'),
             'CUSTVOUCHER_ZONES_TAX[]' => json_decode(Configuration::get('CUSTVOUCHER_ZONES_TAX')),
-            'CUSTVOUCHER_DETAILS' => (!empty($voucherDetails[(int)Configuration::get('PS_LANG_DEFAULT')]))
-            ? $voucherDetails : Configuration::getInt('CUSTVOUCHER_DETAILS'),
-            'CUSTVOUCHER_PREFIX' => (!empty($voucherPrefix[(int)Configuration::get('PS_LANG_DEFAULT')]))
-            ? $voucherPrefix : Configuration::getInt('CUSTVOUCHER_PREFIX'),
+            'CUSTVOUCHER_DETAILS' => Configuration::getConfigInMultipleLangs('CUSTVOUCHER_DETAILS'),
+            'CUSTVOUCHER_PREFIX' => Configuration::getConfigInMultipleLangs('CUSTVOUCHER_PREFIX'),
             'CUSTVOUCHER_CATEGORY' => Tools::getValue(
                 'CUSTVOUCHER_CATEGORY',
                 json_decode(
