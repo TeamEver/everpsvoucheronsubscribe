@@ -23,7 +23,7 @@ class Everpsvoucheronsubscribe extends Module
     {
         $this->name = 'everpsvoucheronsubscribe';
         $this->tab = 'pricing_promotion';
-        $this->version = '3.1.1';
+        $this->version = '3.1.2';
         $this->author = 'Team Ever';
         $this->need_instance = 0;
         $this->bootstrap = true;
@@ -545,8 +545,8 @@ class Everpsvoucheronsubscribe extends Module
     public function createFirstVoucher($customer)
     {
         $duration = (int)Configuration::get('CUSTVOUCHER_DURATION');
-        $description = Configuration::getInt('CUSTVOUCHER_DETAILS');
-        $prefixx = Configuration::getInt('CUSTVOUCHER_PREFIX');
+        $description = Configuration::getConfigInMultipleLangs('CUSTVOUCHER_DETAILS');
+        $prefixx = Configuration::getConfigInMultipleLangs('CUSTVOUCHER_PREFIX');
         $prefix = $prefixx[(int)$this->context->language->id];
         $allowedTaxZones = json_decode(Configuration::get('CUSTVOUCHER_ZONES_TAX'));
         $customer = new Customer((int)$customer->id);
